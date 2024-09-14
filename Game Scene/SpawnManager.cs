@@ -1,62 +1,64 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-namespace Course_Library.Scripts {
+namespace Course_Library.Scripts.Game_Scene {
+    [RequireComponent(typeof(ObjectPooler))]
     public class SpawnManager : MonoBehaviour {
-        [SerializeField]
-        private float spawnRange;
+        [SerializeField] private float spawnRange;
 
-        [SerializeField] private GameObject enemyPrefab;
-        
         [SerializeField] private GameObject powerUpPrefab;
 
         [SerializeField] private GameObject player;
-        
+
         [SerializeField] private TextMeshProUGUI waveText;
+        
+        private ObjectPooler _objectPooler;
 
         private int _wave = 1;
 
-        private readonly List<GameObject> _enemiesAlive = new ();
+        private readonly List<GameObject> _enemiesAlive = new();
 
         private void Start() {
+            _objectPooler = this.GetComponent<ObjectPooler>();
             this.InvokeRepeating(nameof(InstantiatePowerUp), 4, 8);
             SpawnEnemyWave(_wave++);
         }
 
         private void Update() {
-            if (_enemiesAlive.Count == 0) 
+            if (_enemiesAlive.Count == 0)
                 SpawnEnemyWave(_wave++);
         }
 
         private void LateUpdate() {
-            foreach (var enemy in _enemiesAlive.ToList().Where(enemy => enemy.IsDestroyed())) {
+            foreach (GameObject enemy in _enemiesAlive.ToList().Where(enemy => enemy.activeSelf == false)) {
                 _enemiesAlive.Remove(enemy);
             }
         }
 
         private void SpawnEnemyWave(int enemyCount) {
-            for (var i = 0; i < enemyCount; i++) {
-                InstantiateEnemy();
+            if (_objectPooler.poolSize < enemyCount) {
+                _objectPooler.PoolNewObject();
+            }
+            
+            for (int i = 0; i < enemyCount; i++) {
+                ActivateEnemyFromObjectPooler();
                 waveText.text = $"Wave: {enemyCount}";
             }
         }
 
-        private void InstantiateEnemy() {
-            var enemy = Instantiate(enemyPrefab, GenerateSpawnPosition(), enemyPrefab.transform.rotation);
-            if (enemy.TryGetComponent(out EnemyController enemyController)) {
-                enemyController.Init(player);
+        private void ActivateEnemyFromObjectPooler() {
+            ObjectPoolerDto objectPoolerDto = _objectPooler.ActivateObjectAtPosition(GenerateSpawnPosition());
+            if (objectPoolerDto.gameObject.TryGetComponent(out EnemyController enemyController)) {
+                enemyController.Init(player, _objectPooler, objectPoolerDto.indexAtPooler);
             }
 
-            _enemiesAlive.Add(enemy);
+            _enemiesAlive.Add(objectPoolerDto.gameObject);
         }
-        
+
         private void InstantiatePowerUp() {
             Instantiate(powerUpPrefab, GenerateSpawnPosition(), powerUpPrefab.transform.rotation);
         }

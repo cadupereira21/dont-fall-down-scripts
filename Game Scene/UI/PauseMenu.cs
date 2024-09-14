@@ -1,4 +1,5 @@
 using System;
+using Course_Library.Scripts.Game_Scene;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,7 +13,7 @@ namespace Course_Library.Scripts {
 
         private void Update() {
             if (!Input.GetKeyDown(KeyCode.Escape)) return;
-            if (GameStateManager.Instance.CurrentGameState == GameState.Paused) {
+            if (GameStateManager.instance.currentGameState == GameState.PAUSED) {
                 Resume();
             }
             else {
@@ -21,17 +22,17 @@ namespace Course_Library.Scripts {
         }
 
         private void Pause() {
-            GameStateManager.Instance.Pause();
+            GameStateManager.instance.Pause();
             pauseMenu.SetActive(true);
         }
 
         public void Resume() {
-            GameStateManager.Instance.Resume();
+            GameStateManager.instance.Resume();
             pauseMenu.SetActive(false);
         }
 
         public void Restart() {
-            GameStateManager.Instance.Restart();
+            GameStateManager.instance.Restart();
         }
     }
 }

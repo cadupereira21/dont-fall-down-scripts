@@ -1,15 +1,16 @@
 using UnityEngine;
 
-namespace Course_Library.Scripts {
-    public class EnemyController : MonoBehaviour {
+namespace Course_Library.Scripts.Game_Scene {
+    public class EnemyController : PooledObject {
         private GameObject _player;
 
         private Rigidbody _enemyRb;
 
         public float enemySpeed;
 
-        public void Init(GameObject player) {
-            this._player = player;
+        public void Init(GameObject player, ObjectPooler pooler, int indexAtPooler) {
+            _player = player;
+            base.Init(pooler, indexAtPooler);
         }
 
         private void Awake() {
@@ -25,7 +26,7 @@ namespace Course_Library.Scripts {
         
         private void DestroyPlayerIfOutOfBounds() {
             if (this.transform.position.y < -10) {
-                Destroy(this.gameObject);
+                this._pooler.InactivateObject(_indexAtPooler);
             }
         }
     }

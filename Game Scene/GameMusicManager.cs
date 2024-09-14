@@ -6,7 +6,7 @@ namespace Course_Library.Scripts.Game_Scene {
         [SerializeField] private AudioSource cameraAudioSource;
 
         private void Update() {
-            if (GameStateManager.Instance.CurrentGameState == GameState.GameOver) {
+            if (GameStateManager.instance.currentGameState == GameState.GAME_OVER) {
                 if (cameraAudioSource.isPlaying) cameraAudioSource.Stop();
             }
             else {
